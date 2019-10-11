@@ -122,7 +122,7 @@ public class AionContractDetailsImpl implements ContractDetails {
         // ensures that the object is not set to dirty when copied
         if (!Arrays.equals(this.transformedCode, transformedCode)) {
             this.transformedCode = transformedCode;
-            setDirty(true);
+            dirty = true;
         }
     }
 
@@ -141,16 +141,12 @@ public class AionContractDetailsImpl implements ContractDetails {
     }
 
     @Override
-    public void setDirty(boolean dirty) {
-        this.dirty = dirty;
-    }
-
-    @Override
     public boolean isDirty() {
         return dirty;
     }
 
     public void delete() {
+        // TODO: should we set dirty=true?
         this.deleted = true;
     }
 
@@ -200,7 +196,7 @@ public class AionContractDetailsImpl implements ContractDetails {
         byte[] data = RLP.encodeElement(value.toBytes());
         storageTrie.update(key.toBytes(), data);
 
-        setDirty(true);
+        dirty = true;
         rlpEncoded = null;
     }
 
@@ -210,7 +206,7 @@ public class AionContractDetailsImpl implements ContractDetails {
 
         storageTrie.delete(key.toBytes());
 
-        setDirty(true);
+        dirty = true;
         rlpEncoded = null;
     }
 
@@ -252,7 +248,7 @@ public class AionContractDetailsImpl implements ContractDetails {
             e.printStackTrace();
             return;
         }
-        setDirty(true);
+        dirty = true;
         rlpEncoded = null;
     }
 
@@ -279,7 +275,7 @@ public class AionContractDetailsImpl implements ContractDetails {
         this.objectGraph = graph;
         this.objectGraphHash = h256(objectGraph);
 
-        this.setDirty(true);
+        dirty = true;
         this.rlpEncoded = null;
     }
 
@@ -733,7 +729,7 @@ public class AionContractDetailsImpl implements ContractDetails {
         aionContractDetailsCopy.prune = this.prune;
         aionContractDetailsCopy.detailsInMemoryStorageLimit = this.detailsInMemoryStorageLimit;
         aionContractDetailsCopy.setCodes(getDeepCopyOfCodes());
-        aionContractDetailsCopy.setDirty(this.isDirty());
+        aionContractDetailsCopy.dirty = this.dirty;
         aionContractDetailsCopy.deleted = this.deleted;
         aionContractDetailsCopy.address = this.address;
         aionContractDetailsCopy.rlpEncoded =

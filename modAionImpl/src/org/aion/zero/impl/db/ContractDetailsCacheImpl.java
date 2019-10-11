@@ -44,6 +44,12 @@ public class ContractDetailsCacheImpl implements ContractDetails {
         }
     }
 
+    /** Initializes the contract with the dirty flag set to the given parameter. */
+    public ContractDetailsCacheImpl(ContractDetails origContract, boolean assumeDirty) {
+        this(origContract);
+        this.dirty = assumeDirty;
+    }
+
     public static ContractDetailsCacheImpl copy(ContractDetailsCacheImpl cache) {
         ContractDetailsCacheImpl copy = new ContractDetailsCacheImpl(cache.origContract);
         copy.setCodes(new HashMap<>(cache.getCodes()));
@@ -52,7 +58,7 @@ public class ContractDetailsCacheImpl implements ContractDetails {
             copy.objectGraph = Arrays.copyOf(cache.objectGraph, cache.objectGraph.length);
         }
         copy.storage = new HashMap<>(cache.storage);
-        copy.setDirty(cache.isDirty());
+        copy.dirty = cache.dirty;
         copy.deleted = cache.deleted;
         if (cache.getTransformedCode() != null) {
             copy.setTransformedCode(cache.getTransformedCode().clone());
@@ -74,7 +80,7 @@ public class ContractDetailsCacheImpl implements ContractDetails {
         // ensures that the object is not set to dirty when copied
         if (!Arrays.equals(this.transformedCode, transformedCode)) {
             this.transformedCode = transformedCode;
-            setDirty(true);
+            dirty = true;
         }
     }
 
@@ -89,7 +95,7 @@ public class ContractDetailsCacheImpl implements ContractDetails {
             e.printStackTrace();
             return;
         }
-        setDirty(true);
+        dirty = true;
     }
 
     @Override
@@ -107,17 +113,13 @@ public class ContractDetailsCacheImpl implements ContractDetails {
     }
 
     @Override
-    public void setDirty(boolean dirty) {
-        this.dirty = dirty;
-    }
-
-    @Override
     public boolean isDirty() {
         return dirty;
     }
 
     @Override
     public void delete() {
+        // TODO: should we set dirty=true?
         this.deleted = true;
     }
 
@@ -160,7 +162,7 @@ public class ContractDetailsCacheImpl implements ContractDetails {
         Objects.requireNonNull(value);
 
         storage.put(key, value);
-        setDirty(true);
+        dirty = true;
     }
 
     @Override
@@ -168,7 +170,7 @@ public class ContractDetailsCacheImpl implements ContractDetails {
         Objects.requireNonNull(key);
 
         storage.put(key, null);
-        setDirty(true);
+        dirty = true;
     }
 
     /**
@@ -231,7 +233,7 @@ public class ContractDetailsCacheImpl implements ContractDetails {
         Objects.requireNonNull(graph);
 
         objectGraph = graph;
-        setDirty(true);
+        dirty = true;
     }
 
     @Override
@@ -317,7 +319,6 @@ public class ContractDetailsCacheImpl implements ContractDetails {
         origContract.appendCodes(getCodes());
 
         origContract.setTransformedCode(getTransformedCode());
-        origContract.setDirty(this.isDirty() || origContract.isDirty());
     }
 
     /**
@@ -355,7 +356,7 @@ public class ContractDetailsCacheImpl implements ContractDetails {
         }
         copy.storage = getDeepCopyOfStorage();
         copy.setCodes(getDeepCopyOfCodes());
-        copy.setDirty(this.isDirty());
+        copy.dirty = this.dirty;
         copy.deleted = this.deleted;
         if (this.getTransformedCode() != null) {
             copy.setTransformedCode(this.getTransformedCode().clone());
