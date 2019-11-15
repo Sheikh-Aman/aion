@@ -368,6 +368,7 @@ public class SyncHeaderRequestManager {
      * </ol>
      */
     private List<RequestState> updateStatesForRequests(long currentBestBlock) {
+        boolean stopEarly = false;
         // update the known localHeight
         localHeight = Math.max(localHeight, currentBestBlock);
 
@@ -412,18 +413,26 @@ public class SyncHeaderRequestManager {
 
                 // update the maximum request height
                 requestHeight = Math.max(requestHeight, nextFrom + nextSize);
-                // set up for next peer
-                nextFrom =
-                        requestHeight > currentBestBlock + MAX_BLOCK_DIFF
-                                ? nextFrom + nextSize
-                                : requestHeight;
+                if (requestHeight > currentBestBlock + MAX_BLOCK_DIFF) {
+                    // break early to avoid requests too far ahead of the current best block
+                    stopEarly = true;
+                    break;
+                } else {
+                    // set up for next peer
+                    nextFrom = requestHeight;
+                }
             }
 
             requestStates.add(state);
         }
-
-        // the available peers have all been processed
-        availablePeerStates.clear();
+        if (!stopEarly) {
+            // the available peers have all been processed
+            availablePeerStates.clear();
+        } else {
+            for (RequestState state : requestStates) {
+                availablePeerStates.remove(state.id);
+            }
+        }
 
         return requestStates;
     }
