@@ -65,9 +65,10 @@ pipeline {
                 // - this branch is master
                 expression { env.CHANGE_ID || GIT_BRANCH == 'master'}
             }
-            steps { 
+            steps {
+                timeout(20) {
                     dir('FunctionalTests') {
-                        checkout scm: [$class: 'GitSCM', userRemoteConfigs: [[url: 'https://github.com/aionnetwork/node_test_harness.git']], branches: [[name: 'refs/tags/final_jdk10']]], poll: false
+                        checkout scm: [$class: 'GitSCM', userRemoteConfigs: [[url: 'https://github.com/aionnetwork/node_test_harness.git']], branches: [[name: '7fdf562']]], poll: false
                     }
 
                     sh('cp pack/oan.tar.bz2 FunctionalTests/Tests')
@@ -76,6 +77,7 @@ pipeline {
                         sh('tar -C Tests -xjf Tests/oan.tar.bz2')
                         sh('./gradlew :Tests:test -i -PtestNodes=java')
                     }
+                }
             }
         }
     }
