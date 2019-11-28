@@ -135,6 +135,7 @@ public class AionBlockchainImpl implements IAionBlockchain {
     private StakingContractHelper stakingContractHelper = null;
     public final ForkUtility forkUtility;
     public final BeaconHashValidator beaconHashValidator;
+public
 
     /**
      * Chain configuration class, because chain configuration may change dependant on the block
